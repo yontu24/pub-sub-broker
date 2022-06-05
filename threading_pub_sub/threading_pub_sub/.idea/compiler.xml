@@ -6,8 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="pub sub concept" />
-        <module name="pub-sub-broker" />
+        <module name="threading_pub_sub" />
       </profile>
     </annotationProcessing>
   </component>
