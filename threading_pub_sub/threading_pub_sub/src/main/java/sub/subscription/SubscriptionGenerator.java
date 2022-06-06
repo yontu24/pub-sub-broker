@@ -94,25 +94,66 @@ public class SubscriptionGenerator {
     }
 
     private void generateSubscription() {
-        long exec = System.nanoTime();
-        int subscriptionsLength = subscriptionFields.size();
-        if (threaded) {
-            System.out.println("Threads number = " + (subscriptionsLength / chunk_size + 1));
-            ExecutorService executor = Executors.newFixedThreadPool(subscriptionsLength / chunk_size + 1);
-            try {
-                for (int subsIndex = 0; subsIndex < subscriptionsLength; subsIndex += chunk_size) {
-                    final int start = subsIndex;
-                    final Runnable runnable = new ExecutorWorker(subscriptionFields, subsIndex, chunk_size);
-                    executor.submit(runnable);
+        for (int i = 0; i < subscriptionFields.size(); i += 1) {
+            ISubscriptionField subscriptionField = subscriptionFields.get(i);
+
+            if (subscriptionField instanceof SubscriptionString) {
+                if (subscriptions.get(index).getCompany() == null)
+                    subscriptions.get(index).setCompany((SubscriptionString) subscriptionField);
+                else
+                    i -= 1;
+            } else if (subscriptionField instanceof SubscriptionDate) {
+                if (subscriptions.get(index).getDate() == null)
+                    subscriptions.get(index).setDate((SubscriptionDate) subscriptionField);
+                else
+                    i -= 1;
+            } else if (subscriptionField instanceof SubscriptionDouble) {
+                switch (((SubscriptionDouble) subscriptionField).getFieldName()) {
+                    case "value":
+                        if(subscriptions.get(index).getValue() == null)
+                            subscriptions.get(index).setValue((SubscriptionDouble) subscriptionField);
+                        else
+                            i -= 1;
+                        break;
+                    case "drop":
+                        if(subscriptions.get(index).getDrop() == null)
+                            subscriptions.get(index).setDrop((SubscriptionDouble) subscriptionField);
+                        else
+                            i -= 1;
+                        break;
+                    case "variation":
+                        if(subscriptions.get(index).getVariation() == null)
+                            subscriptions.get(index).setVariation((SubscriptionDouble) subscriptionField);
+                        else
+                            i -= 1;
+                        break;
                 }
-            } finally {
-                executor.shutdown();
             }
-        } else {
-            new ExecutorWorker(subscriptionFields, 0, subscriptionsLength).run();
+
+            index = index >= subscriptions.size() - 1 ? 0 : index + 1;
         }
-        System.out.println("Subscription generation time = " + (System.nanoTime() - exec) / 1000000.0);
     }
+
+//    private void generateSubscription() {
+//        long exec = System.nanoTime();
+//        int subscriptionsLength = subscriptionFields.size();
+//        if (threaded) {
+//            System.out.println("Threads number = " + (subscriptionsLength / chunk_size + 1));
+//            ExecutorService executor = Executors.newFixedThreadPool(subscriptionsLength / chunk_size + 1);
+//            try {
+//                for (int subsIndex = 0; subsIndex < subscriptionsLength; subsIndex += chunk_size) {
+//                    final int start = subsIndex;
+//                    final Runnable runnable = new ExecutorWorker(subscriptionFields, subsIndex, chunk_size);
+//                    executor.submit(runnable);
+//                }
+//            } finally {
+//                executor.shutdown();
+//            }
+//        } else {
+//            new ExecutorWorker(subscriptionFields, 0, subscriptionsLength).run();
+//        }
+//        System.out.println("Subscription generation time = " + (System.nanoTime() - exec) / 1000000.0);
+//    }
 
     private static class ExecutorWorker implements Runnable {
         private final List<SubscriptionField> subscriptionFields;
