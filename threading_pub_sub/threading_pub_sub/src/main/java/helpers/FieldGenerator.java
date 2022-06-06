@@ -1,29 +1,42 @@
 package helpers;
 
-import java.util.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 public class FieldGenerator {
-    public static List<String> companies = Arrays.asList("Google", "Bing", "Yahoo", "Fluentis", "Mind", "Amazon", "Conduent", "Continental", "Bitdefender");
-    public static List<Date> dates = Arrays.asList(new Date(2022, 3, 30), new Date(2021, 2, 11), new Date(2022, 4, 1),
-            new Date(2011, 4, 20), new Date(2000, 0, 1));
-    public static List<String> operators = Arrays.asList("=", ">", "<", ">=", "<=", "!=");
-    public static Random rng = new Random();
-    public static int rangeMin = 90;
-    public static int rangeMax = 99;
+	protected static final List<String> companies = Arrays.asList("Google", "Bing", "Yahoo", "Fluentis", "Mind",
+			"Amazon", "Conduent", "Continental", "Bitdefender");
+	protected static final List<LocalDate> dates = Arrays.asList(LocalDate.of(2022, 3, 30), LocalDate.of(2021, 2, 11),
+			LocalDate.of(2022, 4, 1), LocalDate.of(2011, 4, 20), LocalDate.of(2000, 1, 1));
+	protected static final List<String> operators = Arrays.asList("=", ">", "<", ">=", "<=", "!=");
+	public static final Random rng = new Random();
+	public static final int RANGE_MIN = 90;
+	public static final int RANGE_MAX = 99;
 
-    public static double getRandomDouble(){
-        return rangeMin + (rangeMax - rangeMin) * rng.nextDouble();
-    }
+	private FieldGenerator() {
+	}
 
-    public static String getRandomCompany(){
-        return companies.get(rng.nextInt(companies.size()));
-    }
+	public static double getRandomDouble() {
+		double value = RANGE_MIN + (RANGE_MAX - RANGE_MIN) * rng.nextDouble();
+		BigDecimal bd = BigDecimal.valueOf(value);
+		bd = bd.setScale(1, RoundingMode.HALF_UP); // 1 cifra dupa virgula
+		return bd.doubleValue();
+//		return RANGE_MIN + (RANGE_MAX - RANGE_MIN) * rng.nextDouble();
+	}
 
-    public static Date getRandomDate(){
-        return dates.get(rng.nextInt(dates.size()));
-    }
+	public static String getRandomCompany() {
+		return companies.get(rng.nextInt(companies.size()));
+	}
 
-    public static String getRandomOperator(){
-        return operators.get(rng.nextInt(operators.size()));
-    }
+	public static LocalDate getRandomDate() {
+		return dates.get(rng.nextInt(dates.size()));
+	}
+
+	public static String getRandomOperator() {
+		return operators.get(rng.nextInt(operators.size()));
+	}
 }

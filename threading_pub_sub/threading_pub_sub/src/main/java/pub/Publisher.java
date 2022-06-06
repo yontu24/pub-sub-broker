@@ -1,35 +1,59 @@
 package pub;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Properties;
+
 import broker.Broker;
 import pub.publication.Publication;
 import pub.publication.PublicationGenerator;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 public class Publisher implements EventEmitter {
-    private final Broker broker;
+	private Integer publisherId;
+	private final Broker broker;
+	private List<Publication> publications = null;
 
-    public Publisher(Broker broker) {
-        this.broker = broker;
-    }
+	public Publisher(Broker broker, Integer id) {
+		this.broker = broker;
+		this.publisherId = id;
+	}
 
-    @Override
-    public void sendMessage() {
-        System.out.println("Notifying");
+	public List<Publication> getPublications() {
+		return this.publications;
+	}
 
-        try (InputStream input = Broker.class.getClassLoader().getResourceAsStream("input.properties")) {
-            Properties prop = new Properties();
-            prop.load(input);
-            PublicationGenerator publicationGenerator = new PublicationGenerator();
+	public Integer getPublisherId() {
+		return publisherId;
+	}
 
-            for (Publication pub : publicationGenerator.generatePublications(Integer.parseInt(prop.getProperty("publicationsNumber")))) {
-                broker.sendMessage("testTopic", pub.getMapping());
-            }
+	public void setPublisherId(Integer publisherId) {
+		this.publisherId = publisherId;
+	}
 
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
+	@Override
+	public void sendMessage() {
+		System.out.println("Notifying");
+
+		try (InputStream input = Broker.class.getClassLoader().getResourceAsStream("input.properties")) {
+			Properties prop = new Properties();
+			prop.load(input);
+			int publicationNumber = Integer.parseInt(prop.getProperty("publicationsNumber"));
+			PublicationGenerator publicationGenerator = new PublicationGenerator();
+			this.publications = publicationGenerator.generatePublications(publicationNumber);
+
+			for (Publication pub : this.publications) {
+				broker.sendMessage("testTopic", pub.getMapping());
+			}
+
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	@Override
+	public String toString() {
+		return "Publisher [publisherId=" + publisherId + ", broker=" + broker.getId() + ", publications=" + publications
+				+ "]";
+	}
 }
