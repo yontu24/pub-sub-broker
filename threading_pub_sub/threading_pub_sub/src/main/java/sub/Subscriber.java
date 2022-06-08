@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentMap;
 import sub.subscription.Subscription;
 
 public interface Subscriber {
-	void notify(ConcurrentMap<String, String> subscription);
+	void update(ConcurrentMap<String, String> subscription);
 
 	List<Subscription> generateSubscriptions() throws IOException;
 }

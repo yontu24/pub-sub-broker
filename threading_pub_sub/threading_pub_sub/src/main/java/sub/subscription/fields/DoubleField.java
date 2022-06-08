@@ -15,7 +15,7 @@ public class DoubleField implements SubscriptionField {
 
 	@Override
 	public String toString() {
-		return "DoubleField{" + "value=" + value + ", operator='" + operator + '\'' + '}';
+		return "value=" + value + ", operator='" + operator + '\'';
 	}
 
 	public Double getValue() {

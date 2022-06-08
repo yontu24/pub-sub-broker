@@ -22,7 +22,7 @@ public class DateField implements SubscriptionField {
 
 	@Override
 	public String toString() {
-		return "DateField{" + "value=" + value + ", operator='" + operator + '\'' + '}';
+		return "date=" + value + ", operator='" + operator + '\'';
 	}
 
 	@Override

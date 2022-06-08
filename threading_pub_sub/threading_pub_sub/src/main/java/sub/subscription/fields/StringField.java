@@ -21,7 +21,7 @@ public class StringField implements SubscriptionField {
 
 	@Override
 	public String toString() {
-		return "StringField{" + "value='" + value + '\'' + ", operator='" + operator + '\'' + '}';
+		return value + '\'' + ", operator='" + operator;
 	}
 
 	@Override

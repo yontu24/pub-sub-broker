@@ -26,8 +26,9 @@ public class Client implements Subscriber {
 	}
 
 	@Override
-	public void notify(ConcurrentMap<String, String> subscription) {
-		System.out.println(subscription);
+	public void update(ConcurrentMap<String, String> subscription) {
+		System.out.println("Client #" + clientId + " has been notified.");
+		System.out.println(subscription + "\n");
 	}
 
 	// TODO: prop unique for each client?

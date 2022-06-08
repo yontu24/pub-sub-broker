@@ -102,9 +102,10 @@ public class Subscription {
 		if (getClass() != obj.getClass())
 			return false;
 		Subscription other = (Subscription) obj;
-		return Objects.equals(company, other.company) && Objects.equals(date, other.date)
-				&& Objects.equals(drop, other.drop) && Objects.equals(value, other.value)
-				&& Objects.equals(variation, other.variation);
+		return this.company.equals(other.getCompany());
+//		return Objects.equals(company, other.company) && Objects.equals(date, other.date)
+//				&& Objects.equals(drop, other.drop) && Objects.equals(value, other.value)
+//				&& Objects.equals(variation, other.variation);
 	}
 
 //	@Override

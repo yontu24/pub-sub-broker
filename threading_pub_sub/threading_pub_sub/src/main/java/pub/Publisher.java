@@ -11,12 +11,15 @@ import pub.publication.PublicationGenerator;
 
 public class Publisher implements EventEmitter {
 	private Integer publisherId;
-	private final Broker broker;
+	private Broker broker;
 	private List<Publication> publications = null;
 
-	public Publisher(Broker broker, Integer id) {
-		this.broker = broker;
+	public Publisher(Integer id) {
 		this.publisherId = id;
+	}
+
+	public void subscribe(Broker broker) {
+		this.broker = broker;
 	}
 
 	public List<Publication> getPublications() {
@@ -33,7 +36,7 @@ public class Publisher implements EventEmitter {
 
 	@Override
 	public void sendMessage() {
-		System.out.println("Notifying");
+		System.out.println("\nPublisher #" + publisherId + " is notifying broker #" + broker.getBrokerId());
 
 		try (InputStream input = Broker.class.getClassLoader().getResourceAsStream("input.properties")) {
 			Properties prop = new Properties();
@@ -42,10 +45,11 @@ public class Publisher implements EventEmitter {
 			PublicationGenerator publicationGenerator = new PublicationGenerator();
 			this.publications = publicationGenerator.generatePublications(publicationNumber);
 
+			System.out.println("\n\n\n\n" + broker.getNeighborsBrokers() + "\n\n");
 			for (Publication pub : this.publications) {
-				broker.sendMessage("testTopic", pub.getMapping());
+				broker.getBrokerRoutes().forEach(b -> b.sendMessage(pub.getMapping()));
+//				broker.sendMessage(pub.getMapping());
 			}
-
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
@@ -53,7 +57,6 @@ public class Publisher implements EventEmitter {
 
 	@Override
 	public String toString() {
-		return "Publisher [publisherId=" + publisherId + ", broker=" + broker.getId() + ", publications=" + publications
-				+ "]";
+		return "Publisher [publisherId=" + publisherId + ", broker=" + broker + ", publications=" + publications + "]";
 	}
 }
