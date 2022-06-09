@@ -1,0 +1,6 @@
+
+*.v2
+[Dd]ebug/
+x64/
+[Bb]in/
+[Oo]bj/
