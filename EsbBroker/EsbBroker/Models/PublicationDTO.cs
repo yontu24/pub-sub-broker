@@ -3,6 +3,7 @@
     public class PublicationDTO
     {
         public int Sender { get; set; }
+        public int OriginalSender { get; set; }
 
         public string Company { get; set; }
 

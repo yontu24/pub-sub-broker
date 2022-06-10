@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text.Json;
 
 namespace EsbBroker.Services
 {
@@ -11,10 +12,13 @@ namespace EsbBroker.Services
         private readonly ConcurrentDictionary<Subscription, HashSet<int>> subscriptionsFromBrokers;
         private readonly List<int> brokerNeighbours;
         private readonly HttpClient client;
+        private readonly List<PublicationDTO> publications;
+
         public RoutingService() 
         { 
             subscriptionsFromSubscribers = new ConcurrentDictionary<Subscription, HashSet<int>>();
             subscriptionsFromBrokers = new ConcurrentDictionary<Subscription, HashSet<int>>();
+            publications = new List<PublicationDTO>();
 
             brokerNeighbours = new List<int>();
             FindOtherBrokers();
@@ -77,11 +81,11 @@ namespace EsbBroker.Services
         {
             Subscription newSubscription = new Subscription(subscriptionDTO);
 
-            if (subscriptionsFromSubscribers.Keys.Any(x => x.Equals(newSubscription)))
+            if (subscriptionsFromBrokers.Keys.Any(x => x.Equals(newSubscription)))
             {
-                var temp = subscriptionsFromSubscribers.Keys.First(x => x.Equals(newSubscription));
-                if (!subscriptionsFromSubscribers[temp].Contains(subscriptionDTO.Sender))
-                    subscriptionsFromSubscribers[temp].Add(subscriptionDTO.Sender);
+                var temp = subscriptionsFromBrokers.Keys.First(x => x.Equals(newSubscription));
+                if (!subscriptionsFromBrokers[temp].Contains(subscriptionDTO.Sender))
+                    subscriptionsFromBrokers[temp].Add(subscriptionDTO.Sender);
             }
             else
                 subscriptionsFromBrokers[newSubscription] = new HashSet<int>() { subscriptionDTO.Sender };
@@ -97,10 +101,11 @@ namespace EsbBroker.Services
             }
         }
 
-        public async void MatchPublicationAsync(PublicationDTO publicationDTO, bool searchDirect)
+        public async void MatchPublicationAsync(PublicationDTO publicationDTO, bool searchDirect, int ownPort)
         {
             ConcurrentDictionary<Subscription, HashSet<int>> subscriptionsWithSenders = searchDirect ? subscriptionsFromSubscribers : subscriptionsFromBrokers;
             string endRoute = searchDirect ? "Subscriber" : "Broker/publish";
+            Dictionary<int, bool> sentTo = new Dictionary<int, bool>();
 
             foreach (var sub in subscriptionsWithSenders.Keys)
             {
@@ -118,8 +123,54 @@ namespace EsbBroker.Services
                     isMatch = CompareField(sub.Date, publicationDTO.Date) && isMatch;
 
                 if (isMatch)
+                {
+                    publicationDTO.OriginalSender = publicationDTO.Sender;
+                    publicationDTO.Sender = ownPort;
+
                     foreach (var sender in subscriptionsWithSenders[sub])
-                        client.PostAsJsonAsync($"http://localhost:{sender}/{endRoute}", publicationDTO);
+                    {
+                        if (!sentTo.TryGetValue(sender, out _))
+                        {            
+                            client.PostAsJsonAsync($"http://localhost:{sender}/{endRoute}", publicationDTO);
+                            sentTo[sender] = true;
+                        }
+                            
+                    }
+                        
+                }                 
+            }
+        }
+
+        public async void AddPublication(PublicationDTO publicationDTO)
+        {
+            publications.Add(publicationDTO);
+        }
+
+        public void PrintSubscriptions(int ownPort)
+        {
+            using (StreamWriter sw = File.CreateText($"broker_subscriptions_{ownPort}.json"))
+            {
+                foreach (var subscription in subscriptionsFromBrokers)
+                {
+                    sw.WriteLine(JsonSerializer.Serialize(subscription));
+                }
+
+                foreach (var subscription in subscriptionsFromSubscribers)
+                {
+                    sw.WriteLine(JsonSerializer.Serialize(subscription));
+                }
+
+            }
+        }
+
+        public void PrintPublications(int ownPort)
+        {
+            using (StreamWriter sw = File.CreateText($"broker_publications_{ownPort}.json"))
+            {
+                foreach (var publication in publications)
+                {
+                    sw.WriteLine(JsonSerializer.Serialize(publication));
+                }
             }
         }
 

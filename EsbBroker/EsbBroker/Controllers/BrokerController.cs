@@ -59,10 +59,20 @@ namespace EsbBroker.Controllers
                             "Variation = " + publicationDTO.Variation, ", = " + publicationDTO.Drop,
                             "Date = " + publicationDTO.Date)
                 + " from " + publicationDTO.Sender);
+            _routingService.AddPublication(publicationDTO);
+            _routingService.MatchPublicationAsync(publicationDTO, true, HttpContext.Connection.LocalPort);
+            _routingService.MatchPublicationAsync(publicationDTO, false, HttpContext.Connection.LocalPort);
 
-            _routingService.MatchPublicationAsync(publicationDTO, true);
-            _routingService.MatchPublicationAsync(publicationDTO, false);
             await Task.CompletedTask;
+            return Ok();
+        }
+
+        [HttpGet("print")]
+        public IActionResult Print()
+        {
+            _routingService.PrintPublications(HttpContext.Connection.LocalPort);
+            _routingService.PrintSubscriptions(HttpContext.Connection.LocalPort);
+
             return Ok();
         }
     }

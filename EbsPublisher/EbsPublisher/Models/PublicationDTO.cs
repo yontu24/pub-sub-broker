@@ -4,6 +4,7 @@
     {
         public PublicationDTO(Publication publication, int sender)
         {
+            OriginSender = 0;
             Sender = sender;
             Company = publication.Company;
             Value = publication.Value;
@@ -11,6 +12,8 @@
             Variation = publication.Variation;
             Date = publication.Date;
         }
+
+        public int OriginSender { get; set; }
         public int Sender { get; set; }
 
         public string Company { get; set; }

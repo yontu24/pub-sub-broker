@@ -2,6 +2,7 @@
 using EbsPublisher.Models;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text.Json;
 
 namespace EbsPublisher.Services
 {
@@ -28,6 +29,8 @@ namespace EbsPublisher.Services
 
             if (brokers.Any())
                 broker = brokers[new Random().Next(brokers.Count)];
+
+            Console.WriteLine($"Connected to broker running on port: {broker}");
         }
 
         private async Task<bool> PingPort(int port)
@@ -54,14 +57,20 @@ namespace EbsPublisher.Services
         {
             GeneratePublications();
 
-            foreach (var publication in publications)
-                await client.PostAsJsonAsync($"http://localhost:{broker}/Broker/publish", new PublicationDTO(publication, ownPort));
+            using(StreamWriter sw = File.CreateText($"publisher_{ownPort}.json"))
+            {
+                foreach (var publication in publications)
+                {
+                    sw.WriteLine(JsonSerializer.Serialize(publication));
+                    await client.PostAsJsonAsync($"http://localhost:{broker}/Broker/publish", new PublicationDTO(publication, ownPort));
+                }
+            }          
         }
 
         public void GeneratePublications()
         {
             // TODO: a value from a configuration file should be used here instead of hardcoded one
-            for(int i = 0; i < 1000; ++i)
+            for(int i = 0; i < 100; ++i)
             {
                 publications.Add(new Publication()
                 {

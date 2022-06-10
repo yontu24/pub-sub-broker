@@ -32,6 +32,16 @@ namespace EbsSubscriber.Controllers
                             "Date = " + publicationDTO.Date)
                 + " from " + publicationDTO.Sender);
 
+            _subscriptionService.AddPublication(publicationDTO);
+
+            return Ok();
+        }
+
+        [HttpGet("print")]
+        public ActionResult PrintResults()
+        {
+            _subscriptionService.PrintReceivedPublications(HttpContext.Connection.LocalPort);
+
             return Ok();
         }
     }

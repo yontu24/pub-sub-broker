@@ -2,32 +2,37 @@
 using EbsSubscriber.Models;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text.Json;
 
 namespace EbsSubscriber.Services
 {
     public class SubscriptionService : ISubscriptionService
     {
         private readonly SubscriptionGeneratorSetup generatorSetup;
-        private readonly List<Subscription> subscriptions = new List<Subscription>();
+        private readonly List<Subscription> subscriptions;
         private int broker;
         private readonly HttpClient client;
+        private readonly List<PublicationDTO> publications;
 
         // generator setup should be loaded with values from a config file
         public SubscriptionService()
         {
+            subscriptions = new List<Subscription>();
+            publications = new List<PublicationDTO>();
+
             generatorSetup = new SubscriptionGeneratorSetup()
             {
-                SubscriptionsNumber = 1000,
-                CompanyFields = 500,
-                ValueFields = 700,
-                VariationFields = 300,
-                DropFields = 200,
-                DateFields = 400,
-                CompanyEqualFields = 100,
-                ValueEqualFields = 100,
-                VariationEqualFields = 100,
-                DropEqualFields = 100,
-                DateEqualFields = 100,
+                SubscriptionsNumber = 100,
+                CompanyFields = 50,
+                ValueFields = 70,
+                VariationFields = 30,
+                DropFields = 20,
+                DateFields = 40,
+                CompanyEqualFields = 10,
+                ValueEqualFields = 10,
+                VariationEqualFields = 10,
+                DropEqualFields = 10,
+                DateEqualFields = 10,
             };
 
             for(int i = 0; i < generatorSetup.SubscriptionsNumber; i++)
@@ -47,6 +52,9 @@ namespace EbsSubscriber.Services
 
             if (brokers.Any())
                 broker = brokers[new Random().Next(brokers.Count)];
+
+            Console.WriteLine($"Connected to broker {broker}");
+
         }
 
         private async Task<bool> PingPort(int port)
@@ -143,6 +151,18 @@ namespace EbsSubscriber.Services
 
                 index = index >= subscriptions.Count - 1 ? 0 : index + 1;
             }
+        }
+
+        public void AddPublication(PublicationDTO publicationDTO)
+        {
+            publications.Add(publicationDTO);
+        }
+
+        public void PrintReceivedPublications(int ownPort)
+        {
+            using(StreamWriter sw = File.CreateText($"subscirber_publications_{ownPort}.json"))
+                foreach (var publication in publications)
+                    sw.WriteLine(JsonSerializer.Serialize(publication));
         }
     }
 }
